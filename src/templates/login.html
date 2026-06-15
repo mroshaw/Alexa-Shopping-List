@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Amazon Login{% endblock %}
+
+{% block content %}
+<section class="login">
+    <h2>Connect to Amazon</h2>
+    <p>This opens a browser window where you can log in to your Amazon account. Once logged in, click the button below to save your session.</p>
+
+    {% if login_in_progress %}
+        <div class="login-waiting">
+            <p>A browser window is open. Log in to Amazon, then click the button below.</p>
+            <form action="{{ url_for('login.confirm_login') }}" method="post">
+                <button type="submit" class="btn-primary">I've logged in</button>
+            </form>
+        </div>
+    {% else %}
+        <form action="{{ url_for('login.start_login') }}" method="post">
+            <button type="submit" class="btn-primary">Open Amazon login</button>
+        </form>
+    {% endif %}
+</section>
+
+<script>
+    // If a login is in progress, poll /login/status and redirect to the list once done
+    {% if login_in_progress %}
+    (function() {
+        const poll = setInterval(async () => {
+            const res = await fetch("{{ url_for('login.login_status') }}");
+            const data = await res.json();
+            if (!data.in_progress && data.has_cookies) {
+                clearInterval(poll);
+                window.location.href = "{{ url_for('shopping.index') }}";
+            }
+        }, 2000);
+    })();
+    {% endif %}
+</script>
+{% endblock %}

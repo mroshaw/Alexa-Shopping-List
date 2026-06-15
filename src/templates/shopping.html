@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}My Shopping List{% endblock %}
+
+{% block content %}
+<section class="add-item">
+    <form action="{{ url_for('shopping.add_item') }}" method="post">
+        <input type="text" name="item_name" placeholder="Add an item…" required autofocus>
+        <button type="submit">Add</button>
+    </form>
+</section>
+
+<section class="list-section">
+    <h2>To buy ({{ incomplete_items | length }})</h2>
+    {% if incomplete_items %}
+        <ul class="item-list">
+            {% for item in incomplete_items %}
+            <li class="item">
+                <span class="item-name">{{ item.value }}</span>
+                <div class="item-actions">
+                    <form action="{{ url_for('shopping.mark_completed') }}" method="post">
+                        <input type="hidden" name="item_name" value="{{ item.value }}">
+                        <button type="submit" class="btn-done" title="Mark as done">✓</button>
+                    </form>
+                    <form action="{{ url_for('shopping.delete_item') }}" method="post">
+                        <input type="hidden" name="item_name" value="{{ item.value }}">
+                        <button type="submit" class="btn-delete" title="Remove">✕</button>
+                    </form>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="empty-state">Your list is empty — add something above.</p>
+    {% endif %}
+</section>
+
+{% if completed_items %}
+<section class="list-section list-section--completed">
+
+    <div class="section-header">
+        <h2>Done ({{ completed_items | length }})</h2>
+
+        <form action="{{ url_for('shopping.clear_completed') }}"
+              method="post"
+              onsubmit="return confirm('Clear all completed items?');">
+            <button type="submit" class="btn-primary">
+                Clear all done
+            </button>
+        </form>
+    </div>
+
+    <ul class="item-list item-list--completed">
+        {% for item in completed_items %}
+        <li class="item item--completed">
+            <span class="item-name">{{ item.value }}</span>
+            <div class="item-actions">
+                <form action="{{ url_for('shopping.mark_incomplete') }}" method="post">
+                    <input type="hidden" name="item_name" value="{{ item.value }}">
+                    <button type="submit" class="btn-undo" title="Move back to list">↩</button>
+                </form>
+                <form action="{{ url_for('shopping.delete_item') }}" method="post">
+                    <input type="hidden" name="item_name" value="{{ item.value }}">
+                    <button type="submit" class="btn-delete" title="Remove">✕</button>
+                </form>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+{% endblock %}
